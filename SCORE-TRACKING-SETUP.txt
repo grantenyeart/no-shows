@@ -1,0 +1,102 @@
+================================================================
+TRACKING THE QUIZ SCORES
+Three minutes of setup, then it runs itself.
+================================================================
+
+WHAT YOU GET
+A Google Sheet that fills in automatically every time a setter
+submits. One row each: name, score, pass or fail, which questions
+they missed, and the timestamp.
+
+
+----------------------------------------------------------------
+STEP 1  Make the sheet
+----------------------------------------------------------------
+New Google Sheet. Name it "No-Show Quiz Scores".
+Put these in row 1, A through F:
+
+   Timestamp | Name | Score | Out Of | Passed | Missed
+
+
+----------------------------------------------------------------
+STEP 2  Add the script
+----------------------------------------------------------------
+In that sheet: Extensions -> Apps Script.
+Delete whatever is in there, paste this, and save.
+
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  var d = JSON.parse(e.postData.contents);
+  sheet.appendRow([
+    d.when || new Date(),
+    d.name || '',
+    d.score,
+    d.total,
+    d.passed ? 'PASS' : 'FAIL',
+    d.missed || ''
+  ]);
+  return ContentService.createTextOutput('ok');
+}
+
+
+----------------------------------------------------------------
+STEP 3  Deploy it
+----------------------------------------------------------------
+Deploy -> New deployment.
+Type: Web app.
+Execute as: Me.
+Who has access: ANYONE.          <- this one matters
+Deploy, approve the permissions, and copy the Web app URL.
+
+It looks like:
+https://script.google.com/macros/s/AKfy....../exec
+
+
+----------------------------------------------------------------
+STEP 4  Give me the URL
+----------------------------------------------------------------
+Send it to me and I will drop it into quiz.html and push.
+Line 2 of the script block:
+
+   const LOG_URL = "";
+
+That is the only change needed. Until it is filled in, the quiz
+still grades itself and shows the score, it just tells them to
+screenshot it instead of logging automatically.
+
+
+================================================================
+IF YOU WOULD RATHER NOT DEPLOY ANYTHING
+================================================================
+Google Form in quiz mode does the same job with no code:
+
+  New Google Form -> Settings -> make it a Quiz
+  Paste the 15 questions, mark the right answer, 1 point each
+  Responses tab -> link to a Sheet
+
+Slower to build, but it auto-grades, emails them their score, and
+you own it outright. The question bank is in quiz.html if you want
+to copy them across, and I can write them out flat if you prefer.
+
+
+================================================================
+WHAT TO DO WITH THE SCORES
+================================================================
+Pass mark is 12 of 15. Below that is not a knowledge gap, it is a
+"has not watched the training" gap, so send them back to it rather
+than explaining it on a call.
+
+The question they miss tells you what to coach:
+
+   Q1, Q2 missed    They still think no-shows are a scheduling
+                    problem. Nothing else will stick until that
+                    changes.
+   Q3, Q4, Q5       They are booking anyone who will say yes.
+                    Pull their last 10 bookings and ask what the
+                    pain was on each.
+   Q6, Q7, Q8       They are booking a sales call. This one
+                    costs you the most show rate.
+   Q9, Q10          Not asking the commit question at all.
+   Q11, Q12         Hanging up and hoping.
+   Q13, Q14         Running half the sequence.
+   Q15              Giving up at three attempts.
