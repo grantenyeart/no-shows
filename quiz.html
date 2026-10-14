@@ -53,6 +53,10 @@
   .exp b{color:#fff;}
   .q.graded .exp{display:block;}
 
+  .bar{height:5px;background:#0b1322;border-radius:999px;overflow:hidden;margin:22px 0 6px;}
+  .bar i{display:block;height:100%;width:0;background:var(--grad);transition:width .3s ease;}
+  .step{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);}
+  .stage{display:none;} .stage.on{display:block;}
   .btn{display:inline-flex;align-items:center;gap:9px;background:var(--grad);color:#0f172a;
     font-weight:800;font-size:16px;border:0;border-radius:999px;padding:15px 32px;cursor:pointer;font-family:inherit;}
   .btn:hover{filter:brightness(1.08);}
@@ -81,27 +85,40 @@
   <a class="back" href="./">&larr; Back to the training</a>
   <div class="kicker">Rapid Reach &middot; Sales Training</div>
   <h1>No-Show Training <span class="gold">Quiz</span></h1>
-  <p class="lead">Fifteen questions on the process. You need <b style="color:#fde68a">12 out of 15</b> to pass. Watch the training first, then take it. One attempt is logged, so do not guess.</p>
 
-  <div class="who">
-    <label>Your name</label>
-    <input type="text" id="name" placeholder="First and last name" autocomplete="name" />
+  <!-- START -->
+  <div class="stage on" id="st-start">
+    <p class="lead">Fifteen questions, one at a time. You need <b style="color:#fde68a">12 out of 15</b> to pass. Watch the training first. You get the answer and the reason after each one, so read them as you go.</p>
+    <div class="who">
+      <label>Your name</label>
+      <input type="text" id="name" placeholder="First and last name" autocomplete="name" />
+    </div>
+    <div class="actions"><button class="btn" id="begin">Start the quiz</button></div>
   </div>
 
-  <div id="quiz"></div>
-
-  <div class="result" id="result">
-    <div class="score" id="score">0 / 15</div>
-    <div class="verdict" id="verdict"></div>
-    <p class="rsub" id="rsub"></p>
-    <div class="sent" id="sent">Score logged. Your manager can see it.</div>
-    <div class="senterr" id="senterr">Could not log the score automatically. Screenshot this and send it to Grant.</div>
+  <!-- QUESTIONS -->
+  <div class="stage" id="st-quiz">
+    <div class="bar"><i id="barfill"></i></div>
+    <div class="step" id="step"></div>
+    <div id="holder"></div>
+    <div class="actions">
+      <button class="btn" id="check">Check answer</button>
+      <button class="btn" id="next" style="display:none;">Next question</button>
+      <span class="note" id="running"></span>
+    </div>
   </div>
 
-  <div class="actions">
-    <button class="btn" id="submit">Submit my answers</button>
-    <button class="btn ghost" id="retake" style="display:none;">Take it again</button>
-    <span class="note" id="progress"></span>
+  <!-- RESULT -->
+  <div class="stage" id="st-done">
+    <div class="result on" id="result">
+      <div class="score" id="score">0 / 15</div>
+      <div class="verdict" id="verdict"></div>
+      <p class="rsub" id="rsub"></p>
+      <div class="sent" id="sent">Score logged. Your manager can see it.</div>
+      <div class="senterr" id="senterr">Could not log the score automatically. Screenshot this and send it to Grant.</div>
+    </div>
+    <div id="review"></div>
+    <div class="actions"><button class="btn ghost" id="retake">Take it again</button></div>
   </div>
 </div>
 
@@ -114,9 +131,9 @@ const Q = [
   a:["They forgot, or the invite got lost","They decided the call was not worth half an hour of their day","They are not a real buyer","The time slot did not work for them"],
   c:1, e:"A no-show is a <b>value problem, not a calendar problem</b>. They did not lose the invite. Somewhere between your call and that morning they decided it was not worth it."},
 
- {q:"Where is the show actually won?",
-  a:["In the reminder sequence","On the closing call","On the setting call","In the confirmation text"],
-  c:2, e:"The show is won on the setting call. <b>Reminders only collect a decision that has already been made.</b>"},
+ {q:"What helps your show rate?",
+  a:["Finding the pain on the setting call","Confirming they can actually make it","Following up until they show","All of the above"],
+  c:3, e:"All three, every call. <b>Finding the pain is what makes them want to be there. Confirming is what locks it in. Following up is what protects it.</b> Drop any one of them and the other two stop mattering."},
 
  {q:"Three things have to be true before a call is worth booking. Which is NOT one of them?",
   a:["They told you the pain in their own words","They actually need what we sell","They are the decision maker","They already have a budget in mind"],
@@ -126,21 +143,21 @@ const Q = [
   a:["They said they could use more work","You can repeat their pain back to the closer","They sounded interested","They asked about pricing"],
   c:1, e:"That is the test. <b>If you cannot repeat their pain back to the closer, they never gave you any.</b> \"Yeah I could use more work\" is not pain."},
 
- {q:"A shop is booked out six weeks and happy about it. Are they a buyer?",
-  a:["Yes, everyone wants more work","No, and you should not book them for lead gen","Yes, book them and let the closer sort it out","Only if they have a website"],
-  c:1, e:"Someone booked out and happy does not need more work. Someone who wants more and is not getting it does. Booked out can still be an AI receptionist or growth system call, but it is not a lead gen call."},
+ {q:"The moment you book them, they get a text. What is in it?",
+  a:["Just the calendar link","Two testimonial videos, where the call is, and a line asking them to reply YES","A breakdown of our pricing","A summary of everything we sell"],
+  c:1, e:"Two testimonial videos, the booking, and the reply YES line. <b>The testimonials do work before the call even happens</b>, and the reply YES is the commitment you walk them to while you still have them on the phone."},
 
- {q:"What are you actually booking them onto?",
-  a:["A closing call","A free consultation and audit of their business","A demo of our software","A follow-up chat"],
-  c:1, e:"Nobody blocks out half an hour to be sold to. <b>They will block out half an hour to find out what is wrong with their business.</b>"},
+ {q:"What do you tell the client this call is?",
+  a:["A closing call with one of our specialists","A free consultation and audit of their business","A quick intro chat","A demo of what we do"],
+  c:1, e:"You never say closing call. <b>It is a free consultation and a free audit of their business.</b> Nobody blocks out half an hour to be sold to, but they will block it out to find out what is wrong with their business."},
 
- {q:"What do we go through on that audit?",
-  a:["Our pricing and packages","Their Google Business Profile, their SEO and where they rank, and what work is slipping past them","Case studies from other detailers","Their website design"],
-  c:1, e:"Their profile, their ranking, and the work going to somebody else right now. It is about their business, not about us."},
+ {q:"What do we go over with them on that call?",
+  a:["Their Google Business Profile","Their SEO and where they actually rank","How much work is slipping past them right now","All of the above"],
+  c:3, e:"All of it. Their profile, where they rank against the shops in their own town, and the searches happening in their area that are going to somebody else. <b>That is the whole reason it is worth showing up for.</b>"},
 
- {q:"Do they keep the audit if they do not buy?",
-  a:["No, it is only for clients","Yes, and you should tell them that on the phone","Only if they sit through the whole call","We do not mention it either way"],
-  c:1, e:"They keep it either way, and <b>saying so out loud is what makes the call worth showing up for</b>. Worst case they learn what to fix. Best case we fix it."},
+ {q:"They tell you they need to run it past their business partner. What do you do?",
+  a:["Book it anyway, the closer can handle it","Get the partner on the call too, or book a time they can both make","Book it and hope they bring the partner","Tell them to decide first and call you back"],
+  c:1, e:"If they have to run it past someone, that call will not close and most of the time it will not even happen. <b>Get the decision maker on, or get them both on.</b>"},
 
  {q:"What is the zombie apocalypse question, word for word?",
   a:["\"You are going to make it, right?\"","\"Other than a zombie apocalypse, is there any other reason you would not be able to make this call?\"","\"Can I count on you being there?\"","\"Nothing is going to come up, is it?\""],
@@ -154,9 +171,9 @@ const Q = [
   a:["Within an hour of the call","That evening","While they are still on the phone with you","The morning of the call"],
   c:2, e:"Walk them to it while you still have them. <b>A confirmation you watched them send beats ten reminders you sent into silence.</b>"},
 
- {q:"They will not open the confirmation text while you are on the phone. What does that tell you?",
-  a:["Nothing, people are busy","That this call is already in trouble","That you should book them further out","That they need a different time"],
-  c:1, e:"It is telling you right now that this one is shaky, and you would far rather know now than at 2pm tomorrow."},
+ {q:"The call is tomorrow and they still have not confirmed. What do you do?",
+  a:["Assume they are coming and leave it alone","Keep following up until they confirm, however many touches that takes","Send one more text and leave the ball in their court","Cancel it and rebook when they respond"],
+  c:1, e:"<b>Be relentless until they confirm.</b> You dialed for days to get this person and got it on a closer's calendar. Do not let it die because you did not want to seem pushy on the fourth attempt. Chase it until they show or until they tell you no."},
 
  {q:"Which of these is NOT part of the confirmation sequence?",
   a:["A text the morning of the call","A call the morning of the call","A call 15 minutes before","A text the night before instead of calling in the morning"],
@@ -171,48 +188,76 @@ const Q = [
   c:1, e:"Be unreasonable. You dialed for days to get this person, got them talking about what keeps them up at night, and got it on a calendar. <b>Chase it until they show or until they tell you no.</b>"}
 ];
 
-const quiz=document.getElementById('quiz');
-quiz.innerHTML=Q.map((item,i)=>
- '<div class="q" id="q'+i+'"><div class="qn">Question '+(i+1)+' of '+Q.length+'</div>'+
- '<div class="qt">'+item.q+'</div>'+
- item.a.map((opt,j)=>'<label class="opt" id="o'+i+'_'+j+'"><input type="radio" name="q'+i+'" value="'+j+'"><span>'+opt+'</span></label>').join('')+
- '<div class="exp">'+item.e+'</div></div>').join('');
+let i=0, score=0, picked=null, log=[];
+const holder=document.getElementById('holder');
 
-const prog=document.getElementById('progress');
-function answered(){ return Q.filter((_,i)=>document.querySelector('input[name="q'+i+'"]:checked')).length; }
-function upd(){ const n=answered(); prog.textContent=n+' of '+Q.length+' answered'; }
-quiz.addEventListener('change',upd); upd();
-
-let graded=false;
-document.getElementById('submit').onclick=function(){
-  if(graded) return;
-  const name=document.getElementById('name').value.trim();
-  if(!name){ alert('Put your name in first.'); document.getElementById('name').focus(); return; }
-  if(answered()<Q.length){ alert('Answer all '+Q.length+' questions before submitting.'); return; }
-  let score=0; const missed=[];
-  Q.forEach((item,i)=>{
-    const picked=parseInt(document.querySelector('input[name="q'+i+'"]:checked').value,10);
-    const box=document.getElementById('q'+i);
-    box.classList.add('graded');
-    document.getElementById('o'+i+'_'+item.c).classList.add('correct');
-    if(picked===item.c){ score++; box.classList.add('right'); }
-    else { box.classList.add('wrong'); document.getElementById('o'+i+'_'+picked).classList.add('picked-wrong'); missed.push(i+1); }
-    box.querySelectorAll('input').forEach(x=>x.disabled=true);
+function show(){
+  const item=Q[i];
+  document.getElementById('step').textContent='Question '+(i+1)+' of '+Q.length;
+  document.getElementById('barfill').style.width=(i/Q.length*100)+'%';
+  document.getElementById('running').textContent = i ? score+' right so far' : '';
+  holder.innerHTML='<div class="q" id="cur"><div class="qt">'+item.q+'</div>'+
+    item.a.map((o,j)=>'<label class="opt" id="o'+j+'"><input type="radio" name="cur" value="'+j+'"><span>'+o+'</span></label>').join('')+
+    '<div class="exp">'+item.e+'</div></div>';
+  picked=null;
+  document.getElementById('check').style.display='inline-flex';
+  document.getElementById('check').disabled=true;
+  document.getElementById('next').style.display='none';
+  holder.querySelectorAll('input').forEach(r=>r.onchange=()=>{
+    picked=parseInt(r.value,10); document.getElementById('check').disabled=false;
   });
-  graded=true;
-  document.getElementById('name').disabled=true;
-  this.disabled=true; this.textContent='Submitted';
-  document.getElementById('retake').style.display='inline-flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
+document.getElementById('begin').onclick=function(){
+  const n=document.getElementById('name').value.trim();
+  if(!n){ alert('Put your name in first.'); document.getElementById('name').focus(); return; }
+  document.getElementById('st-start').classList.remove('on');
+  document.getElementById('st-quiz').classList.add('on');
+  show();
+};
+
+document.getElementById('check').onclick=function(){
+  if(picked===null) return;
+  const item=Q[i], box=document.getElementById('cur');
+  box.classList.add('graded');
+  document.getElementById('o'+item.c).classList.add('correct');
+  if(picked===item.c){ score++; box.classList.add('right'); }
+  else { box.classList.add('wrong'); document.getElementById('o'+picked).classList.add('picked-wrong'); }
+  log.push({n:i+1, ok:picked===item.c});
+  box.querySelectorAll('input').forEach(x=>x.disabled=true);
+  this.style.display='none';
+  const nx=document.getElementById('next');
+  nx.style.display='inline-flex';
+  nx.textContent = (i===Q.length-1) ? 'See my score' : 'Next question';
+};
+
+document.getElementById('next').onclick=function(){
+  i++;
+  if(i<Q.length){ show(); return; }
+  document.getElementById('barfill').style.width='100%';
+  document.getElementById('st-quiz').classList.remove('on');
+  document.getElementById('st-done').classList.add('on');
+  finish();
+};
+
+function finish(){
+  const name=document.getElementById('name').value.trim();
+  const missed=log.filter(x=>!x.ok).map(x=>x.n);
   const pass=score>=12;
   const r=document.getElementById('result');
-  r.classList.add('on', pass?'pass':'fail');
+  r.classList.add(pass?'pass':'fail');
   document.getElementById('score').textContent=score+' / '+Q.length;
   document.getElementById('verdict').textContent = pass ? 'Passed' : 'Not a pass yet';
   document.getElementById('rsub').textContent = pass
-    ? (missed.length ? 'Scroll up and read the ones you missed: '+missed.join(', ')+'.' : 'Perfect score. Go book some calls.')
-    : 'You need 12 to pass. Scroll up, read every red one, watch the training again and retake it.';
-  r.scrollIntoView({behavior:'smooth',block:'center'});
+    ? (missed.length ? 'Read the ones you missed again below: '+missed.join(', ')+'.' : 'Perfect score. Go book some calls.')
+    : 'You need 12 to pass. Read the missed ones below, watch the training again, then retake it.';
+
+  document.getElementById('review').innerHTML = missed.length
+    ? '<h3 style="font-size:18px;font-weight:800;margin:26px 0 12px;">What you missed</h3>' +
+      missed.map(n=>'<div class="q graded wrong"><div class="qn">Question '+n+'</div><div class="qt">'+Q[n-1].q+'</div>'+
+        '<div class="opt correct"><span>'+Q[n-1].a[Q[n-1].c]+'</span></div><div class="exp">'+Q[n-1].e+'</div></div>').join('')
+    : '';
 
   if(LOG_URL){
     fetch(LOG_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
@@ -220,10 +265,9 @@ document.getElementById('submit').onclick=function(){
         when:new Date().toLocaleString('en-US',{timeZone:'America/New_York'})})})
       .then(()=>document.getElementById('sent').classList.add('on'))
       .catch(()=>document.getElementById('senterr').classList.add('on'));
-  } else {
-    document.getElementById('senterr').classList.add('on');
-  }
-};
+  } else { document.getElementById('senterr').classList.add('on'); }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
 document.getElementById('retake').onclick=function(){ location.reload(); };
 </script>
