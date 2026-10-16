@@ -122,9 +122,10 @@
   </div>
 </div>
 
+<!-- Shared tracker. The endpoint lives in score.js, never in here. -->
+<script src="https://grantenyeart.github.io/training-scores/score.js"></script>
+
 <script>
-// Paste your Apps Script web app URL here to log scores to the sheet.
-const LOG_URL = "";
 
 const Q = [
  {q:"What is a no-show actually telling you?",
@@ -259,13 +260,12 @@ function finish(){
         '<div class="opt correct"><span>'+Q[n-1].a[Q[n-1].c]+'</span></div><div class="exp">'+Q[n-1].e+'</div></div>').join('')
     : '';
 
-  if(LOG_URL){
-    fetch(LOG_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({quiz:'Setter No-Show Quiz',name:name,score:score,total:Q.length,passed:pass,missed:missed.join(' '),
-        when:new Date().toLocaleString('en-US',{timeZone:'America/New_York'})})})
-      .then(()=>document.getElementById('sent').classList.add('on'))
-      .catch(()=>document.getElementById('senterr').classList.add('on'));
-  } else { document.getElementById('senterr').classList.add('on'); }
+  RRScore.submit(
+    { quiz:'Setter No-Show Quiz', track:'Setters', name:name, score:score,
+      total:Q.length, passed:pass, missed:missed.join(' ') },
+    ()=>document.getElementById('sent').classList.add('on'),
+    ()=>document.getElementById('senterr').classList.add('on')
+  );
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
